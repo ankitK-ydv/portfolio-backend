@@ -7,48 +7,41 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 app.post("/contact", async (req, res) => {
   const { name, email, message } = req.body;
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-
-  const mailOptions = {
-    from: email,
-    to: process.env.EMAIL_USER,
-    subject: "New Message from Portfolio Website",
-    text: `
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      replyTo: email,
+      to: process.env.EMAIL_USER,
+      subject: "New Message from Portfolio Website",
+      text: `
 You have a new message from client on portfolio page.
 
 Name: ${name}
 Email: ${email}
 Message: ${message}
-    `
-  };
+      `
+    });
 
-  try {
-    await transporter.sendMail(mailOptions);
-    res.json({ success: true, message: "Message sent successfully" });
+    res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Email failed" });
+    console.error("Email error:", error);
+    res.status(500).json({ success: false });
   }
 });
 
 app.get("/test-mail", async (req, res) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: process.env.EMAIL_USER,
@@ -62,8 +55,6 @@ app.get("/test-mail", async (req, res) => {
     res.send("Mail failed");
   }
 });
-
-
 
 app.listen(process.env.PORT || 5000, () => {
   console.log("Server running");
