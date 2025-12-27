@@ -39,6 +39,31 @@ Message: ${message}
   }
 });
 
+app.get("/test-mail", async (req, res) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
+      subject: "Test Mail",
+      text: "Render email test successful"
+    });
+
+    res.send("Mail sent");
+  } catch (e) {
+    console.log(e);
+    res.send("Mail failed");
+  }
+});
+
+
 
 app.listen(process.env.PORT || 5000, () => {
   console.log("Server running");
