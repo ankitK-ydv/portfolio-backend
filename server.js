@@ -60,3 +60,13 @@ Message: ${message}
 app.listen(process.env.PORT || 5000, () => {
   console.log("Server running");
 });
+
+app.get("/smtp-check", async (req, res) => {
+  try {
+    await transporter.verify();
+    res.send("SMTP CONNECTION OK");
+  } catch (err) {
+    console.error("SMTP VERIFY ERROR:", err);
+    res.send("SMTP VERIFY FAILED: " + err.message);
+  }
+});
