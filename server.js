@@ -1,35 +1,31 @@
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
-require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
   secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
 });
-
 
 app.post("/contact", async (req, res) => {
   const { name, email, message } = req.body;
 
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: "Portfolio Contact <no-reply@portfolio.com>",
+      to: "ankit8288ya@gmail.com",
       replyTo: email,
-      to: process.env.EMAIL_USER,
       subject: "New Message from Portfolio Website",
       text: `
-You have a new message from client on portfolio page.
-
 Name: ${name}
 Email: ${email}
 Message: ${message}
@@ -37,8 +33,8 @@ Message: ${message}
     });
 
     res.json({ success: true });
-  } catch (error) {
-    console.error("Email error:", error);
+  } catch (err) {
+    console.error("Email error:", err);
     res.status(500).json({ success: false });
   }
 });
@@ -46,15 +42,15 @@ Message: ${message}
 app.get("/test-mail", async (req, res) => {
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
-      subject: "Test Mail",
-      text: "Render email test successful"
+      from: "Portfolio Test <no-reply@portfolio.com>",
+      to: "ankit8288ya@gmail.com",
+      subject: "Brevo SMTP Test",
+      text: "Brevo SMTP is working successfully"
     });
 
     res.send("Mail sent");
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.send("Mail failed");
   }
 });
